@@ -40,10 +40,10 @@ jobs:
           -Dsonar.host.url=$SONAR_HOST_URL \
           -Dsonar.login=$SONAR_TOKEN
     - name: Login to DockerHub
-        run: echo "${{ secrets.DCKR_PASSWD }}" | docker login -u "${{ secrets.DCKR_USRNAME }}" --password-stdin
+      run: echo "${{ secrets.DCKR_PASSWD }}" | docker login -u "${{ secrets.DCKR_USRNAME }}" --password-stdin
 
     - name: Build Docker image
-      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/nodejs-helloworld:latest .
+      run: docker build -t ${{ secrets.DCKR_USRNAME }}/nodejs-helloworld:latest .
 
     - name: Push Docker image
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/nodejs-helloworld:latest
+      run: docker push ${{ secrets.DCKR_USRNAME }}/nodejs-helloworld:latest
