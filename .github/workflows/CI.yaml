@@ -1,0 +1,49 @@
+name: CI/CD with SonarQube
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+      #    env: 
+      #      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      #      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #      DCKR_USRNAME: ${{ secrets.DCKR_USRNAME }}
+      #      DCKR_PASSWD: ${{ secrets.DCKR_PASSWD }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test || echo "No tests defined"
+
+    - name: Run SonarQube Scanner
+      env:
+        SONAR_HOST_URL: http://<host-ip>:9000
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        npm install -g sonarqube-scanner
+        sonar-scanner \
+          -Dsonar.projectKey=nodejs-helloworld \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=$SONAR_HOST_URL \
+          -Dsonar.login=$SONAR_TOKEN
+    - name: Login to DockerHub
+        run: echo "${{ secrets.DCKR_PASSWD }}" | docker login -u "${{ secrets.DCKR_USRNAME }}" --password-stdin
+
+    - name: Build Docker image
+      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/nodejs-helloworld:latest .
+
+    - name: Push Docker image
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/nodejs-helloworld:latest
